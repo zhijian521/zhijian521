@@ -4,11 +4,16 @@
 
 需要 Python 3、`fonttools[woff]` 和霞鹜文楷屏幕阅读版（LXGW WenKai Screen Regular）。标题、正文、英文和技术栈全部使用这一字体。
 
+建议在 Python 虚拟环境中安装依赖。`requirements.txt` 固定字体处理工具版本，包含读取 WOFF2 所需的依赖；虚拟环境和 Python 缓存已排除在 Git 之外。
+
 ```sh
+python -m pip install -r tools/requirements.txt
 python tools/render-profile.py --font /path/to/LXGWWenKaiScreen.ttf
 ```
 
 `--font` 也支持官方字体的 WOFF2 文件。字体不提交进仓库，来源和许可保留在 `assets/FONT-LICENSES.txt`。
+
+当前素材使用霞鹜文楷屏幕阅读版 1.530。换电脑重新生成时，使用相同字体版本可以避免字形差异；处理完整 WOFF2 较慢时，可使用同版本 TTF 或覆盖所需字符的 WOFF2 子集。
 
 素材分为宽屏 / 窄屏、浅色 / 深色四份。宽屏画布宽度 840，窄屏宽度 420，README 使用 `<picture>` 的媒体条件选择；窄屏重新排文字而不是把宽屏素材缩小。系统深色偏好决定配色，GitHub 手动主题与系统偏好不一致时，以系统偏好为准。
 
