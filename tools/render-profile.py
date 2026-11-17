@@ -19,6 +19,8 @@ FONTS = {'serif': TTFont(ARGS.serif), 'sans': TTFont(ARGS.sans)}
 GLYPHS = {key: font.getGlyphSet(location={'wght': 400}) for key, font in FONTS.items()}
 CMAPS = {key: font.getBestCmap() for key, font in FONTS.items()}
 EM = {key: font['head'].unitsPerEm for key, font in FONTS.items()}
+# 度量和绘制共用倍率，保证朱砂强调的连续文字与右对齐文字同步缩小。
+TEXT_SCALE = 0.88
 PALETTES = {
     'light': dict(paper='#ffffff', ink='#252725', muted='#60635f', line='#d8dad4', red='#b6402d', white='#ffffff'),
     'dark': dict(paper='#0d1117', ink='#ecece5', muted='#aeb3ad', line='#3c433f', red='#ef8c76', white='#ffffff'),
@@ -36,7 +38,7 @@ def glyph(key, character):
 
 
 def measure(text, size, key='sans', tracking=0):
-    return sum(glyph(key, char)[1] * size / EM[key] + tracking for char in text)
+    return sum(glyph(key, char)[1] * size / EM[key] + tracking for char in text) * TEXT_SCALE
 
 
 class Canvas:
@@ -50,7 +52,8 @@ class Canvas:
         ]
 
     def text(self, content, x, y, size, color='ink', family='sans', tracking=0):
-        scale = size / EM[family]
+        scale = size * TEXT_SCALE / EM[family]
+        tracking *= TEXT_SCALE
         self.parts.append(f'<g fill="{self.palette[color]}" aria-label="{escape(content, quote=True)}">')
         for character in content:
             outline, advance = glyph(family, character)
