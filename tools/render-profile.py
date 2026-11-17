@@ -12,15 +12,15 @@ from fontTools.ttLib import TTFont
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'assets'
 PARSER = argparse.ArgumentParser(description=__doc__)
-PARSER.add_argument('--serif', default='C:/Windows/Fonts/NotoSerifSC-VF.ttf')
-PARSER.add_argument('--sans', default='C:/Windows/Fonts/NotoSansSC-VF.ttf')
+PARSER.add_argument('--font', required=True, help='霞鹜文楷屏幕阅读版的 TTF 或 WOFF2 文件')
 ARGS = PARSER.parse_args()
-FONTS = {'serif': TTFont(ARGS.serif), 'sans': TTFont(ARGS.sans)}
-GLYPHS = {key: font.getGlyphSet(location={'wght': 400}) for key, font in FONTS.items()}
+FONT = TTFont(ARGS.font)
+FONTS = {'serif': FONT, 'sans': FONT}
+GLYPHS = {key: font.getGlyphSet() for key, font in FONTS.items()}
 CMAPS = {key: font.getBestCmap() for key, font in FONTS.items()}
 EM = {key: font['head'].unitsPerEm for key, font in FONTS.items()}
 # 度量和绘制共用倍率，保证朱砂强调的连续文字与右对齐文字同步缩小。
-TEXT_SCALE = 0.88
+TEXT_SCALE = 0.88 * 2 / 3
 PALETTES = {
     'light': dict(paper='#ffffff', ink='#252725', muted='#60635f', line='#d8dad4', red='#b6402d', white='#ffffff'),
     'dark': dict(paper='#0d1117', ink='#ecece5', muted='#aeb3ad', line='#3c433f', red='#ef8c76', white='#ffffff'),
@@ -47,7 +47,7 @@ class Canvas:
         self.parts = [
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{width * 2}" height="{height * 2}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc">',
             f'<title id="title">{escape(title)}</title><desc id="desc">{escape(description)}</desc>',
-            '<!-- 字形来自 Noto Serif SC 与 Noto Sans SC；来源及许可见 FONT-LICENSES.txt。 -->',
+            '<!-- 全部字形来自霞鹜文楷屏幕阅读版；来源及许可见 FONT-LICENSES.txt。 -->',
             f'<rect width="{width}" height="{height}" fill="{palette["paper"]}"/>',
         ]
 
@@ -98,7 +98,8 @@ def render(mode, mobile):
     c.text('ZHIJIAN / FRONTEND DEVELOPER', inset, 28, 12 if mobile else 15, color='muted', tracking=.4)
     stamp_x, stamp_y = (inset, 51) if mobile else (end - 104, 7)
     c.parts.append(f'<rect x="{stamp_x}" y="{stamp_y}" width="104" height="32" fill="#b6402d"/>')
-    c.text('简静造物', stamp_x + 12, stamp_y + 23, 17, color='white', family='serif', tracking=3)
+    stamp_text_x = stamp_x + (104 - measure('简静造物', 17, 'serif', tracking=3)) / 2
+    c.text('简静造物', stamp_text_x, stamp_y + (32 + 17 * TEXT_SCALE * .75) / 2, 17, color='white', family='serif', tracking=3)
     c.text('知简。', inset, 197 if mobile else 164, 91 if mobile else 112, family='serif', tracking=-5)
     vertical_x, vertical_top = (307, 112) if mobile else (379, 72)
     c.parts.append(f'<path d="M{vertical_x - 17} {vertical_top - 10}v100" stroke="{palette["line"]}"/>')
@@ -183,7 +184,8 @@ for font in FONTS.values():
             value = record.toUnicode()
             if value not in copyrights:
                 copyrights.append(value)
-license_path.write_text('Profile typography: Noto Serif SC and Noto Sans SC (weight 400).\n\n'
-                        'https://github.com/notofonts/noto-cjk\n\n'
+license_path.write_text('Profile typography: LXGW WenKai Screen (Regular), all text.\n'
+                        + FONT['name'].getDebugName(5) + '\n\n'
+                        'https://github.com/lxgw/LxgwWenKai-Screen\n\n'
                         + '\n'.join(copyrights) + '\n\n' + ofl + '\n', encoding='utf-8')
 print(f'Generated {len(list(ASSETS.glob("*.svg")))} SVG assets and README.md.')
