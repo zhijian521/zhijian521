@@ -21,6 +21,9 @@ CMAPS = {key: font.getBestCmap() for key, font in FONTS.items()}
 EM = {key: font['head'].unitsPerEm for key, font in FONTS.items()}
 # 度量和绘制共用倍率，保证朱砂强调的连续文字与右对齐文字同步缩小。
 TEXT_SCALE = 0.88 * 2 / 3
+# 正文与竖签分别补偿可读性，不联动已经确定的姓名、主张和项目标题。
+BODY_TEXT_BOOST = 1.25
+VERTICAL_TEXT_BOOST = 1.5
 PALETTES = {
     'light': dict(paper='#ffffff', ink='#252725', muted='#60635f', line='#d8dad4', red='#b6402d', white='#ffffff'),
     'dark': dict(paper='#0d1117', ink='#ecece5', muted='#aeb3ad', line='#3c433f', red='#ef8c76', white='#ffffff'),
@@ -104,7 +107,7 @@ def render(mode, mobile):
     vertical_x, vertical_top = (307, 112) if mobile else (379, 72)
     c.parts.append(f'<path d="M{vertical_x - 17} {vertical_top - 10}v100" stroke="{palette["line"]}"/>')
     for index, char in enumerate('代码与文字之间'):
-        c.text(char, vertical_x, vertical_top + index * 15, 12, color='muted', family='serif')
+        c.text(char, vertical_x, vertical_top + index * 15, 12 * VERTICAL_TEXT_BOOST, color='muted', family='serif')
     slogan_y = 254 if mobile else 232
     c.text('不必繁复，', inset, slogan_y, 31 if mobile else 33, family='serif')
     lead = '把'
@@ -116,7 +119,7 @@ def render(mode, mobile):
     intro_y = 350 if mobile else 333
     lines = ['我写前端，做工具，也记录日常。', '喜欢简洁的设计，', '和那些经得起使用的小东西。'] if mobile else ['我写前端，做工具，也记录日常。', '喜欢简洁的设计，和那些经得起使用的小东西。']
     for index, line in enumerate(lines):
-        c.text(line, inset, intro_y + index * 29, 19, color='muted')
+        c.text(line, inset, intro_y + index * 29, 19 * BODY_TEXT_BOOST, color='muted')
     c.line(inset, 433 if mobile else 412, end, color='ink', width=2)
     c.save('banner' + suffix)
 
@@ -135,13 +138,13 @@ def render(mode, mobile):
         c.text(work['title'], content_x, 40, 25 if mobile else 29, family='serif')
         c.arrow(end - 19, 20)
         for index, line in enumerate(work['mobile'] if mobile else work['description']):
-            c.text(line, content_x, 82 + index * 31, 18 if mobile else 19, color='muted')
+            c.text(line, content_x, 82 + index * 31, (18 if mobile else 19) * BODY_TEXT_BOOST, color='muted')
         c.text(work['tech'], content_x, 194 if mobile else 144, 14 if mobile else 16, color='muted')
         c.line(inset, height - 1, end)
         c.save(work['slug'] + suffix)
 
     c = Canvas(width, 88 if mobile else 74, palette, '认真生活 · 简单做人 · 用心做事', '语无边 yuwb.dev')
-    c.text('认真生活 · 简单做人 · 用心做事', inset, 34 if mobile else 44, 17, color='muted')
+    c.text('认真生活 · 简单做人 · 用心做事', inset, 34 if mobile else 44, 17 * BODY_TEXT_BOOST, color='muted')
     c.text('yuwb.dev', inset if mobile else end - measure('yuwb.dev', 17) - 26, 73 if mobile else 44, 17, color='red')
     c.arrow(105 if mobile else end - 14, 59 if mobile else 30)
     c.save('footer' + suffix)
